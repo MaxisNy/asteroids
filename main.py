@@ -26,7 +26,7 @@ def main():
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
     # shot object handling
-    Shot.containers = (shots_group)
+    Shot.containers = (updatable, drawable, shots_group)
     # shot = Shot(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
     # asteroid object handling
@@ -45,9 +45,12 @@ def main():
         for obj in drawable:
             obj.draw(screen)
 
-        for obj in shots_group:
-            obj.draw(screen)
-            obj.update(dt)
+        # check for destroyed asteroids
+        for asteroid in asteroids_group:
+            for shot in shots_group:
+                if asteroid.check_collision(shot):
+                    asteroid.split()
+                    shot.kill()
 
         # check for collisions with
         for asteroid in asteroids_group:
