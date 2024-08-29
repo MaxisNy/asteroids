@@ -6,11 +6,13 @@ import pygame
 class Player(CircleShape):
 
     cooldown_timer = 0
+    invincibility_timer = 0
 
     def __init__(self, x, y) -> None:
         super().__init__(x, y, PLAYER_RADIUS)
         self.position = pygame.Vector2(x, y)
         self.rotation = 0
+        self.health = PLAYER_HEALTH
 
     def triangle(self):
         forward = pygame.math.Vector2(0, 1).rotate(self.rotation)
@@ -21,7 +23,14 @@ class Player(CircleShape):
         return [a, b, c]
     
     def draw(self, screen):
-        pygame.draw.polygon(screen, 'cyan', self.triangle(), 2)
+        if self.is_invincible():
+            # player ship flashing
+            if int(Player.invincibility_timer) % 2 == 0:
+                pygame.draw.polygon(screen, PLAYER_INVINCIBILITY_COLOR, self.triangle(), 2)
+            else:
+                pygame.draw.polygon(screen, PLAYER_BASE_COLOR, self.triangle(), 2)
+        else:
+            pygame.draw.polygon(screen, PLAYER_BASE_COLOR, self.triangle(), 2)
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
@@ -31,6 +40,11 @@ class Player(CircleShape):
         Player.cooldown_timer -= dt
         if Player.cooldown_timer < 0:
             Player.cooldown_timer = 0
+
+        # update invincibility timer
+        Player.invincibility_timer -= dt
+        if Player.invincibility_timer < 0:
+            Player.invincibility_timer = 0
 
         keys = pygame.key.get_pressed()
         # inverse rotation if moving backwards
@@ -57,7 +71,7 @@ class Player(CircleShape):
         # screen wrapping
         vertical_center_offset = abs((SCREEN_WIDTH // 2) - self.position[0]) 
         
-        # top / bottom wrapping       
+        # top / bottom wrapping
         if self.position[1] < 0:    # top
             self.position[1] = SCREEN_HEIGHT
             if self.position[0] > SCREEN_WIDTH // 2:
@@ -78,7 +92,20 @@ class Player(CircleShape):
             self.position[0] = 0
 
     def shoot(self):
-        if Player.cooldown_timer == 0:
+        if Player.cooldown_timer == 0 and Player.invincibility_timer == 0:
             shot = Shot(self.position[0], self.position[1])
             shot.velocity = pygame.math.Vector2.rotate(pygame.math.Vector2(0, 1), self.rotation) * PLAYER_SHOOT_SPEED
             Player.cooldown_timer = PLAYER_SHOOT_COOLDOWN
+    
+    def is_invincible(self):
+        return Player.invincibility_timer > 0
+    
+    def take_damage(self):
+        self.health -= 1
+        # make player temporary invincible
+        Player.invincibility_timer += PLAYER_INVINCIBILITY_COOLDOWN
+    
+    def reset(self):
+        # make player temporary invincible
+        Player.invincibility_timer += PLAYER_INVINCIBILITY_COOLDOWN
+        self.health = PLAYER_HEALTH

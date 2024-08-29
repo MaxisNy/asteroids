@@ -13,6 +13,7 @@ class Asteroid(CircleShape):
     def update(self, dt):
         self.position += self.velocity * dt
 
+    """ Returns whether the asteroid was split or not """
     def split(self):
         self.kill()
         if self.radius != ASTEROID_MIN_RADIUS:
@@ -23,4 +24,6 @@ class Asteroid(CircleShape):
             new_asteroid2 = Asteroid(self.position[0], self.position[1], self.radius - ASTEROID_MIN_RADIUS)
             new_asteroid1.velocity, new_asteroid2.velocity = \
                 new_asteroid_velocity1 * 1.2, new_asteroid_velocity2 * 1.2
-            
+            return True
+        else:
+            return False
