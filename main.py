@@ -8,6 +8,7 @@ from player import Player
 from asteroid import Asteroid
 from asteroidsfield import AsteroidField
 from shot import Shot
+from explosion import Explosion
 
 clock = pygame.time.Clock()
 dt = 0
@@ -58,6 +59,9 @@ def main():
     AsteroidField.containers = (updatable)
     AsteroidField()
 
+    # explosions handling
+    Explosion.containers = (updatable, drawable)
+
     while play_game:
         screen.fill('black')
         display_gui(screen, player.health)
@@ -73,6 +77,7 @@ def main():
             for shot in shots_group:
                 if asteroid.check_collision(shot):
                     if not asteroid.split():
+                        Explosion(shot.position[0], shot.position[1])
                         score += 1
                     shot.kill()
         # check for player collision with asteroids
